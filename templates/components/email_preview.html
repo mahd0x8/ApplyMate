@@ -1,0 +1,12 @@
+<div class="ai-result">
+  <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">
+    Generated Email — {{ app.role }} at {{ app.company }}
+  </div>
+  <pre style="white-space:pre-wrap;font-family:inherit;font-size:13.5px;line-height:1.6;">{{ email_content }}</pre>
+  <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+    <button onclick="navigator.clipboard.writeText(document.querySelector('.email-text')?.textContent||'');showToast('Copied!','success')" class="btn btn-ghost btn-xs">
+      Copy Email
+    </button>
+    <span class="email-text" style="display:none;">{{ email_content }}</span>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+<div class="timeline-item" id="cert-{{ cert.pk }}">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+    <div>
+      <div class="timeline-title" style="display:flex;align-items:center;gap:8px;">
+        {{ cert.name }}
+        {% if cert.credential_url %}<a href="{{ cert.credential_url }}" target="_blank" style="color:var(--accent);font-size:12px;">↗</a>{% endif %}
+      </div>
+      {% if cert.issuer %}<div class="timeline-sub">{{ cert.issuer }}</div>{% endif %}
+      {% if cert.issued_date %}<div class="timeline-date">{{ cert.issued_date|date:"M Y" }}</div>{% endif %}
+    </div>
+    <button class="btn btn-xs" style="flex:0 0 auto;background:transparent;border:1px solid var(--border);color:var(--faint);"
+            hx-post="{% url 'delete_certification' cert.pk %}"
+            hx-target="#cert-{{ cert.pk }}"
+            hx-swap="outerHTML"
+            hx-confirm="Delete this certification?"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+    </button>
+  </div>
+</div>

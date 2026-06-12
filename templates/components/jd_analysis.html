@@ -1,0 +1,50 @@
+{% if result.error %}
+<div class="error-msg">{{ result.error }}</div>
+{% else %}
+<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+    <div style="font-size:14px;font-weight:700;">JD Analysis</div>
+    {% if result.match_score %}
+    <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;padding:3px 10px;border-radius:20px;{% if result.match_score >= 80 %}color:#22C55E;background:rgba(34,197,94,0.14);{% elif result.match_score >= 60 %}color:#F59E0B;background:rgba(245,158,11,0.14);{% else %}color:#EF4444;background:rgba(239,68,68,0.14);{% endif %}">{{ result.match_score }}% match</span>
+    {% endif %}
+  </div>
+  <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
+    {% if result.summary %}
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Summary</div>
+      <div style="font-size:13.5px;color:var(--text);line-height:1.5;">{{ result.summary }}</div>
+    </div>
+    {% endif %}
+    {% if result.key_skills %}
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Key Skills</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        {% for skill in result.key_skills %}
+        <span style="padding:3px 10px;background:var(--accent-soft);color:var(--accent);border-radius:20px;font-size:12px;font-weight:600;">{{ skill }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% if result.missing_skills %}
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Skills Gap</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        {% for skill in result.missing_skills %}
+        <span style="padding:3px 10px;background:rgba(239,68,68,0.1);color:#EF4444;border-radius:20px;font-size:12px;font-weight:600;">{{ skill }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% if result.red_flags %}
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">⚠ Red Flags</div>
+      <ul style="padding-left:16px;display:flex;flex-direction:column;gap:3px;">
+        {% for flag in result.red_flags %}
+        <li style="font-size:13px;color:var(--muted);">{{ flag }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

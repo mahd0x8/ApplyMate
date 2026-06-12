@@ -1,0 +1,14 @@
+<div style="background:var(--elevated);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
+    <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;">
+      <span style="color:var(--accent);">{{ doc.get_doc_type_display }}</span>
+      <span style="font-size:11px;color:var(--faint);font-family:'JetBrains Mono',monospace;">v{{ doc.version }} · {{ doc.created_at|date:"N j" }}</span>
+    </div>
+    <div style="display:flex;gap:6px;">
+      <a href="{% url 'export_document' doc.pk 'txt' %}" class="btn btn-ghost btn-xs">TXT</a>
+      <a href="{% url 'export_document' doc.pk 'docx' %}" class="btn btn-ghost btn-xs">DOCX</a>
+      <a href="{% url 'export_document' doc.pk 'pdf' %}" class="btn btn-ghost btn-xs">PDF</a>
+    </div>
+  </div>
+  <pre style="padding:16px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;max-height:400px;overflow-y:auto;color:var(--text);font-family:'JetBrains Mono',monospace;">{{ doc.content }}</pre>
+</div>

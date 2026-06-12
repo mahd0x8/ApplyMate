@@ -1,0 +1,20 @@
+<div class="timeline-item" id="proj-{{ proj.pk }}">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+    <div style="flex:1;min-width:0;">
+      <div class="timeline-title" style="display:flex;align-items:center;gap:8px;">
+        {{ proj.name }}
+        {% if proj.url %}<a href="{{ proj.url }}" target="_blank" style="color:var(--accent);font-size:12px;">↗</a>{% endif %}
+      </div>
+      {% if proj.technologies %}<div class="timeline-sub">{{ proj.technologies }}</div>{% endif %}
+      {% if proj.description %}<div class="timeline-desc">{{ proj.description }}</div>{% endif %}
+    </div>
+    <button class="btn btn-xs" style="flex:0 0 auto;background:transparent;border:1px solid var(--border);color:var(--faint);"
+            hx-post="{% url 'delete_project' proj.pk %}"
+            hx-target="#proj-{{ proj.pk }}"
+            hx-swap="outerHTML"
+            hx-confirm="Delete this project?"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+    </button>
+  </div>
+</div>

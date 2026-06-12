@@ -8,9 +8,15 @@ from profiles.models import UserProfile
 
 @login_required
 def ai_tools_home(request):
+    from applications.models import JobApplication
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     recent_answers = FormAnswer.objects.filter(user=request.user)[:5]
-    return render(request, 'ai_tools/home.html', {'profile': profile, 'recent_answers': recent_answers})
+    user_apps = JobApplication.objects.filter(user=request.user)
+    return render(request, 'ai_tools/home.html', {
+        'profile': profile,
+        'recent_answers': recent_answers,
+        'user_apps': user_apps,
+    })
 
 
 @login_required

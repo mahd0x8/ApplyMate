@@ -1,0 +1,17 @@
+<div class="timeline-item" id="edu-{{ edu.pk }}">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+    <div>
+      <div class="timeline-title">{{ edu.degree }}{% if edu.field_of_study %} in {{ edu.field_of_study }}{% endif %}</div>
+      <div class="timeline-sub">{{ edu.institution }}</div>
+      <div class="timeline-date">{{ edu.start_date|date:"M Y" }} — {% if edu.is_current %}Present{% elif edu.end_date %}{{ edu.end_date|date:"M Y" }}{% else %}—{% endif %}{% if edu.gpa %} · GPA: {{ edu.gpa }}{% endif %}</div>
+    </div>
+    <button class="btn btn-xs" style="flex:0 0 auto;background:transparent;border:1px solid var(--border);color:var(--faint);"
+            hx-post="{% url 'delete_education' edu.pk %}"
+            hx-target="#edu-{{ edu.pk }}"
+            hx-swap="outerHTML"
+            hx-confirm="Delete this education?"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+    </button>
+  </div>
+</div>

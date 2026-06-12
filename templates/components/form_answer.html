@@ -1,0 +1,11 @@
+<div class="ai-result">
+  <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Generated Answer</div>
+  {{ fa.answer|linebreaksbr }}
+  <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:8px;">
+    <button onclick="navigator.clipboard.writeText(this.closest('.ai-result').querySelector('.answer-text')?.textContent||'');showToast('Copied!','success')" class="btn btn-ghost btn-xs">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy
+    </button>
+    <span class="answer-text" style="display:none;">{{ fa.answer }}</span>
+  </div>
+</div>
