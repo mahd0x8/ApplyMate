@@ -1,0 +1,11 @@
+{% load allauth %}
+{% if attrs.href %}
+<a href="{{ attrs.href }}" class="btn btn-primary" style="display:flex;justify-content:center;width:100%;margin-top:8px;">{% slot %}{% endslot %}</a>
+{% else %}
+<button {% if attrs.form %}form="{{ attrs.form }}"{% endif %}
+        {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+        {% if attrs.type %}type="{{ attrs.type }}"{% endif %}
+        class="btn btn-primary" style="width:100%;justify-content:center;height:48px;font-size:15px;margin-top:8px;">
+  {% slot %}{% endslot %}
+</button>
+{% endif %}

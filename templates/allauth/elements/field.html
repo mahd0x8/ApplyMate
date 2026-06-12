@@ -1,0 +1,30 @@
+{% load allauth %}
+<div class="form-group" style="margin-bottom:14px;">
+  {% if attrs.errors %}
+    {% for error in attrs.errors %}
+    <div class="error-msg" style="margin-bottom:6px;font-size:12px;">{{ error }}</div>
+    {% endfor %}
+  {% endif %}
+  {% if attrs.type != "hidden" %}
+    <label class="form-label" for="{{ attrs.id }}">{% slot label %}{% endslot %}</label>
+  {% endif %}
+  {% if attrs.type == "textarea" %}
+    <textarea class="form-textarea"
+              {% if attrs.required %}required{% endif %}
+              {% if attrs.name %}name="{{ attrs.name }}"{% endif %}
+              {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+              {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}>{% slot value %}{% endslot %}</textarea>
+  {% elif attrs.type == "hidden" %}
+    <input type="hidden" {% if attrs.name %}name="{{ attrs.name }}"{% endif %} {% if attrs.value is not None %}value="{{ attrs.value }}"{% endif %}>
+  {% else %}
+    <input class="form-input"
+           {% if attrs.required %}required{% endif %}
+           {% if attrs.autocomplete %}autocomplete="{{ attrs.autocomplete }}"{% endif %}
+           {% if attrs.name %}name="{{ attrs.name }}"{% endif %}
+           {% if attrs.id %}id="{{ attrs.id }}"{% endif %}
+           {% if attrs.placeholder %}placeholder="{{ attrs.placeholder }}"{% endif %}
+           {% if attrs.value is not None %}value="{{ attrs.value }}"{% endif %}
+           type="{{ attrs.type }}">
+  {% endif %}
+  {% if slots.help_text %}<span style="font-size:12px;color:var(--faint);">{% slot help_text %}{% endslot %}</span>{% endif %}
+</div>

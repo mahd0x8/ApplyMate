@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block head_title %}ApplyMate{% endblock %} — ApplyMate</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+<div class="landing-page">
+  <div style="position:fixed;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 0%,rgba(16,185,129,0.1),transparent 70%);pointer-events:none;"></div>
+  <div class="landing-card">
+    <div class="landing-logo" style="margin-bottom:24px;">
+      <div class="landing-logo-icon">A</div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-0.03em;">Apply<span style="color:var(--accent);">Mate</span></div>
+    </div>
+    {% block content %}{% endblock %}
+  </div>
+</div>
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_body %}{% endblock %}
+</body>
+</html>

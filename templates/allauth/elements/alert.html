@@ -1,0 +1,4 @@
+{% load allauth %}
+<div class="{% if attrs.alert_type == 'success' %}save-success{% else %}error-msg{% endif %}" style="margin-bottom:14px;">
+  {% slot %}{% endslot %}
+</div>
