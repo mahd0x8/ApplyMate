@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard — ApplyMate{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<!-- Stats -->
+<div class="stats-grid">
+  {% with delta_color="#22C55E" %}
+  <div class="stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Total Applied</span>
+      <span class="stat-delta" style="color:#22C55E;background:rgba(34,197,94,0.14);">▲ Active</span>
+    </div>
+    <div class="stat-body">
+      <div class="stat-value">{{ total_applied }}</div>
+      <div class="sparkline" id="spark-applied"></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Interviews</span>
+      <span class="stat-delta" style="color:#F59E0B;background:rgba(245,158,11,0.14);">● Active</span>
+    </div>
+    <div class="stat-body">
+      <div class="stat-value">{{ interviews }}</div>
+      <div class="sparkline" id="spark-interviews"></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Offers</span>
+      <span class="stat-delta" style="color:#22C55E;background:rgba(34,197,94,0.14);">★ Best</span>
+    </div>
+    <div class="stat-body">
+      <div class="stat-value">{{ offers }}</div>
+      <div class="sparkline" id="spark-offers"></div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-header">
+      <span class="stat-label">Response Rate</span>
+      <span class="stat-delta" style="color:#3B82F6;background:rgba(59,130,246,0.14);">● Rate</span>
+    </div>
+    <div class="stat-body">
+      <div class="stat-value">{{ response_rate }}%</div>
+      <div class="sparkline" id="spark-rate"></div>
+    </div>
+  </div>
+  {% endwith %}
+</div>
+
+<!-- Pipeline header -->
+<div class="pipeline-header">
+  <div style="display:flex;align-items:center;gap:11px;">
+    <h2 class="pipeline-title">Pipeline</h2>
+    <span class="pipeline-hint">Drag cards to update status</span>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-secondary btn-sm" onclick="openModal('add-modal')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M12 5v14M5 12h14"/>
+      </svg>
+      Add Application
+    </button>
+  </div>
+</div>
+
+<!-- Kanban Board -->
+<div class="pipeline-board" id="kanban-board">
+  {% for status, label, color in col_meta %}
+  <div class="kanban-col"
+       id="col-{{ status }}"
+       ondragover="colDragOver(event)"
+       ondragleave="colDragLeave(event)"
+       ondrop="colDrop(event, '{{ status }}')">
+    <div class="col-header">
+      <span class="col-dot" style="background:{{ color }};box-shadow:0 0 0 4px {{ color }}2e;"></span>
+      <span class="col-title">{{ label }}</span>
+      <span class="col-count">{{ columns|get_col:status|length }}</span>
+      <button class="col-add" onclick="openModalForStatus('{{ status }}')" title="Add to {{ label }}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
+    </div>
+    <div class="col-cards" id="cards-{{ status }}">
+      {% for card in columns|get_col:status %}
+      {% include "components/kanban_card.html" with card=card %}
+      {% empty %}
+      <div class="empty-col" style="height:60px;border:1.5px dashed var(--border);border-radius:10px;display:grid;place-items:center;color:var(--faint);font-size:12.5px;">
+        Drop here
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- Add Application Modal -->
+<div class="modal-overlay" id="add-modal" onclick="if(event.target===this)closeModal('add-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Add Application</div>
+        <div class="modal-sub">Track a new job opportunity</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('add-modal')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <form method="POST" action="{% url 'application_create' %}"
+          hx-post="{% url 'application_create' %}"
+          hx-target="#cards-wishlist"
+          hx-swap="afterbegin"
+          hx-on::after-request="closeModal('add-modal');showToast('Application added!','success')">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Company *</label>
+          <input type="text" name="company" class="form-input" placeholder="e.g. Stripe" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role *</label>
+          <input type="text" name="role" class="form-input" placeholder="e.g. Senior Engineer" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <input type="text" name="location" class="form-input" placeholder="Remote / New York…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select name="status" class="form-select" id="modal-status">
+            <option value="wishlist">Wishlist</option>
+            <option value="applied">Applied</option>
+            <option value="interview">Interview</option>
+            <option value="offer">Offer</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job URL</label>
+          <input type="url" name="job_url" class="form-input" placeholder="https://…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Source</label>
+          <select name="source" class="form-select">
+            <option value="linkedin">LinkedIn</option>
+            <option value="indeed">Indeed</option>
+            <option value="referral">Referral</option>
+            <option value="company">Company Site</option>
+            <option value="other" selected>Other</option>
+          </select>
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Job Description</label>
+          <textarea name="job_description" class="form-textarea" placeholder="Paste the job description here for AI optimization…" rows="4"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('add-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Add Application
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openModalForStatus(status) {
+  document.getElementById('modal-status').value = status;
+  openModal('add-modal');
+  // When status != wishlist, HTMX target should be the right column
+  const form = document.querySelector('#add-modal form');
+  form.setAttribute('hx-target', `#cards-${status}`);
+  htmx.process(form);
+}
+
+// Sparklines
+function makeSpark(id, data, color) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const max = Math.max(...data) || 1;
+  el.innerHTML = data.map((v, i) => {
+    const h = Math.max(10, (v/max)*100);
+    const op = 0.28 + 0.72 * (i/(data.length-1));
+    return `<div class="spark-bar" style="height:${h}%;background:${color};opacity:${op.toFixed(2)};"></div>`;
+  }).join('');
+}
+makeSpark('spark-applied', [8,12,9,15,11,18,14,{{ total_applied }}], 'var(--accent)');
+makeSpark('spark-interviews', [2,3,2,4,3,5,4,{{ interviews }}], '#F59E0B');
+makeSpark('spark-offers', [0,1,0,1,1,2,1,{{ offers }}], '#22C55E');
+makeSpark('spark-rate', [12,18,15,22,19,26,24,{{ response_rate }}], '#3B82F6');
+</script>
+{% endblock %}
