@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ApplyMate{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% block body %}
+<div class="app-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">A</div>
+      <div class="logo-text">Apply<span>Mate</span></div>
+      <button class="collapse-btn" onclick="toggleSidebar()" title="Toggle sidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 6l-6 6 6 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{% url 'dashboard' %}" class="nav-item {% block nav_dashboard %}{% endblock %}">
+        <span class="nav-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="3" width="7.5" height="7.5" rx="2"/>
+            <rect x="13.5" y="3" width="7.5" height="7.5" rx="2" opacity="0.45"/>
+            <rect x="3" y="13.5" width="7.5" height="7.5" rx="2" opacity="0.45"/>
+            <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>
+          </svg>
+        </span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="{% url 'application_list' %}" class="nav-item {% block nav_applications %}{% endblock %}">
+        <span class="nav-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="4" width="5" height="16" rx="2"/>
+            <rect x="9.5" y="4" width="5" height="11" rx="2" opacity="0.5"/>
+            <rect x="16" y="4" width="5" height="13" rx="2" opacity="0.5"/>
+          </svg>
+        </span>
+        <span class="nav-label" style="display:flex;align-items:center;gap:8px;">
+          Applications
+          <span class="app-badge">{{ total_apps|default:"0" }}</span>
+        </span>
+      </a>
+      <a href="{% url 'ai_tools' %}" class="nav-item {% block nav_ai %}{% endblock %}">
+        <span class="nav-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 0 6h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1 0-6h1V6a4 4 0 0 1 4-4z"/>
+            <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <span class="nav-label">AI Tools</span>
+      </a>
+      <a href="{% url 'profile' %}" class="nav-item {% block nav_profile %}{% endblock %}">
+        <span class="nav-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="3.6"/>
+            <path d="M5.5 19.5c0-3.6 2.9-6.3 6.5-6.3s6.5 2.7 6.5 6.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Profile</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="ai-credits">
+        <div class="credits-title">AI Credits</div>
+        <div class="credits-sub">Powered by Claude API</div>
+        <div class="credits-bar"><div class="credits-fill" style="width:71%"></div></div>
+      </div>
+      <div class="user-row">
+        <div class="user-avatar">{{ request.user.profile.get_initials|default:"U" }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ request.user.profile.full_name|default:request.user.email }}</div>
+          <div class="user-plan">{{ request.user.email }}</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-area">
+    <header class="topbar">
+      <div>
+        <div class="topbar-greeting">{% block page_title %}Good morning{% if request.user.profile.full_name %}, {{ request.user.profile.full_name|truncatewords:1 }}{% endif %}{% endblock %}</div>
+        <div class="topbar-date mono">{% now "l · N j" %}</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/>
+          </svg>
+          <input type="text" placeholder="Search applications…" id="global-search">
+          <span class="kbd">⌘K</span>
+        </div>
+        <div class="theme-toggle">
+          <button class="theme-btn" data-theme="light" onclick="setTheme('light')" title="Light mode">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+            </svg>
+          </button>
+          <button class="theme-btn active" data-theme="dark" onclick="setTheme('dark')" title="Dark mode">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
+            </svg>
+          </button>
+        </div>
+        <button class="icon-btn" title="Notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9a6 6 0 0 1 12 0c0 4.5 1.8 5.6 1.8 5.6H4.2S6 13.5 6 9Z"/>
+            <path d="M10 18.5a2.2 2.2 0 0 0 4 0"/>
+          </svg>
+          <span class="notif-dot"></span>
+        </button>
+        <a href="{% url 'account_logout' %}" class="icon-btn" title="Sign out">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <div class="content" id="main-content">
+      <div class="content-glow"></div>
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+{% block modals %}{% endblock %}
+{% endblock %}
+
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
