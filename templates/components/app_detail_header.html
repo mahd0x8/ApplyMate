@@ -1,0 +1,60 @@
+<div style="display:flex;align-items:flex-start;gap:16px;">
+  <div style="width:48px;height:48px;flex:0 0 auto;border-radius:12px;background:{{ app.color }};display:grid;place-items:center;font-size:18px;font-weight:800;color:#fff;">
+    {{ app.get_logo_initials }}
+  </div>
+  <div style="flex:1;min-width:0;">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <h1 style="font-size:20px;font-weight:800;letter-spacing:-0.02em;">{{ app.role }}</h1>
+      <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:{{ app.get_status_color }}22;color:{{ app.get_status_color }};">
+        <span style="width:5px;height:5px;border-radius:50%;background:{{ app.get_status_color }};"></span>
+        {{ app.get_status_display }}
+      </span>
+      {% if app.match_score %}<span class="match-badge" style="color:var(--accent);background:var(--accent-soft);">{{ app.match_score }}% match</span>{% endif %}
+    </div>
+    <div style="font-size:14px;color:var(--muted);margin-top:3px;">{{ app.company }}{% if app.location %} · {{ app.location }}{% endif %}</div>
+    {% if app.salary_min or app.salary_max %}
+    <div style="font-size:12.5px;color:var(--faint);margin-top:2px;font-family:'JetBrains Mono',monospace;">
+      {% if app.salary_min and app.salary_max %}${{ app.salary_min|floatformat:0 }}k – ${{ app.salary_max|floatformat:0 }}k{% elif app.salary_min %}${{ app.salary_min|floatformat:0 }}k+{% endif %}
+    </div>
+    {% endif %}
+  </div>
+  <div style="display:flex;gap:8px;flex:0 0 auto;">
+    {% if app.job_url %}
+    <a href="{{ app.job_url }}" target="_blank" class="btn btn-secondary btn-sm">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      View Job
+    </a>
+    {% endif %}
+    <div style="position:relative;">
+      <button class="btn btn-secondary btn-sm" onclick="toggleStatusMenu()">
+        Move to ▾
+      </button>
+      <div id="status-menu" style="display:none;position:absolute;right:0;top:38px;background:var(--elevated);border:1px solid var(--border);border-radius:10px;padding:6px;z-index:10;min-width:140px;box-shadow:0 8px 24px rgba(2,6,23,0.4);">
+        {% for val, lbl in app.STATUS_CHOICES %}
+        {% if val != app.status %}
+        <form method="POST" action="{% url 'application_move' app.pk %}" style="margin:0;">
+          {% csrf_token %}
+          <input type="hidden" name="status" value="{{ val }}">
+          <button type="submit" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:var(--text);background:transparent;border:none;width:100%;cursor:pointer;transition:background 0.1s;text-align:left;"
+                  onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+            {{ lbl }}
+          </button>
+        </form>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function toggleStatusMenu() {
+  const m = document.getElementById('status-menu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#status-menu') && !e.target.closest('[onclick="toggleStatusMenu()"]')) {
+    const m = document.getElementById('status-menu');
+    if (m) m.style.display = 'none';
+  }
+});
+</script>

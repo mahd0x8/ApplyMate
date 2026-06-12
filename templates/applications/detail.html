@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ app.role }} at {{ app.company }} — ApplyMate{% endblock %}
+{% block nav_applications %}active{% endblock %}
+{% block page_title %}
+  <a href="{% url 'dashboard' %}" style="color:var(--faint);font-size:14px;font-weight:600;">Dashboard</a>
+  <span style="color:var(--faint);margin:0 6px;">›</span>
+  {{ app.company }}
+{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 380px;gap:20px;padding:20px 28px 32px;height:calc(100vh - 73px);overflow:hidden;">
+
+  <!-- Left: App info + AI docs -->
+  <div style="overflow-y:auto;padding-right:4px;">
+
+    <!-- Header Card -->
+    <div class="card" style="margin-bottom:16px;">
+      <div id="app-detail-header">{% include "components/app_detail_header.html" %}</div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:2px;margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;width:fit-content;">
+      <button class="tab-btn active" data-tab="jd" onclick="switchTab('jd')">Job Description</button>
+      <button class="tab-btn" data-tab="cv" onclick="switchTab('cv')">Resume</button>
+      <button class="tab-btn" data-tab="cl" onclick="switchTab('cl')">Cover Letter</button>
+      <button class="tab-btn" data-tab="notes" onclick="switchTab('notes')">Notes</button>
+    </div>
+
+    <!-- JD Tab -->
+    <div class="tab-content" id="tab-jd">
+      <div class="card">
+        <div class="section-header" style="margin-bottom:14px;">
+          <div class="section-title">Job Description</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-secondary btn-sm"
+                    hx-post="{% url 'analyze_jd' %}"
+                    hx-target="#jd-analysis"
+                    hx-swap="innerHTML"
+                    hx-include="[name='job_description']"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    hx-indicator="#jd-loading">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg>
+              Analyze JD
+            </button>
+          </div>
+        </div>
+        {% if app.job_description %}
+        <div style="font-size:13.5px;line-height:1.7;color:var(--muted);white-space:pre-wrap;max-height:300px;overflow-y:auto;">{{ app.job_description }}</div>
+        {% else %}
+        <div class="empty-state" style="padding:24px 0;">
+          <div class="empty-state-icon">📋</div>
+          <div>No job description added yet.</div>
+        </div>
+        {% endif %}
+        <div id="jd-analysis" style="margin-top:14px;"></div>
+        <span id="jd-loading" class="htmx-indicator" style="color:var(--faint);font-size:13px;">Analyzing…</span>
+        <input type="hidden" name="job_description" value="{{ app.job_description }}">
+      </div>
+    </div>
+
+    <!-- CV Tab -->
+    <div class="tab-content" id="tab-cv" style="display:none;">
+      <div class="card">
+        <div class="section-header" style="margin-bottom:14px;">
+          <div class="section-title">AI-Generated Resume</div>
+          <button class="btn btn-primary btn-sm"
+                  hx-post="{% url 'generate_document' app.pk %}"
+                  hx-target="#cv-output"
+                  hx-swap="innerHTML"
+                  hx-vals='{"doc_type": "cv"}'
+                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                  hx-indicator="#cv-loading"
+                  onclick="showToast('Generating tailored CV…','ai')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 0 6h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1 0-6h1V6a4 4 0 0 1 4-4z"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg>
+            Generate with AI
+          </button>
+        </div>
+        <span id="cv-loading" class="htmx-indicator" style="color:var(--accent);font-size:13px;display:flex;align-items:center;gap:6px;">
+          <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke-dasharray="30" stroke-dashoffset="0"/></svg>
+          Claude is writing your CV…
+        </span>
+        <div id="cv-output">
+          {% for doc in documents %}{% if doc.doc_type == 'cv' %}{% include "components/document_preview.html" with doc=doc %}{% if not forloop.last %}<hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">{% endif %}{% endif %}{% endfor %}
+          {% if not documents %}<div class="empty-state" style="padding:24px 0;"><div class="empty-state-icon">📄</div><div>No CV generated yet. Click "Generate with AI" above.</div></div>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Cover Letter Tab -->
+    <div class="tab-content" id="tab-cl" style="display:none;">
+      <div class="card">
+        <div class="section-header" style="margin-bottom:14px;">
+          <div class="section-title">AI-Generated Cover Letter</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="cl-tone" class="form-select" style="height:34px;font-size:13px;width:160px;">
+              <option value="formal">Formal</option>
+              <option value="conversational">Conversational</option>
+              <option value="enthusiastic">Enthusiastic</option>
+            </select>
+            <button class="btn btn-primary btn-sm"
+                    hx-post="{% url 'generate_document' app.pk %}"
+                    hx-target="#cl-output"
+                    hx-swap="innerHTML"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    hx-indicator="#cl-loading"
+                    onclick="document.querySelector('[name=doc_type]').value='cover_letter';document.querySelector('[name=tone]').value=document.getElementById('cl-tone').value;showToast('Generating cover letter…','ai')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 0 6h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1 0-6h1V6a4 4 0 0 1 4-4z"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg>
+              Generate with AI
+            </button>
+            <input type="hidden" name="doc_type" value="cover_letter">
+            <input type="hidden" name="tone" value="formal">
+          </div>
+        </div>
+        <span id="cl-loading" class="htmx-indicator" style="color:var(--accent);font-size:13px;display:flex;align-items:center;gap:6px;">
+          <svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke-dasharray="30"/></svg>
+          Claude is writing your cover letter…
+        </span>
+        <div id="cl-output">
+          {% for doc in documents %}{% if doc.doc_type == 'cover_letter' %}{% include "components/document_preview.html" with doc=doc %}{% endif %}{% endfor %}
+          {% if not documents %}<div class="empty-state" style="padding:24px 0;"><div class="empty-state-icon">✉️</div><div>No cover letter generated yet.</div></div>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes Tab -->
+    <div class="tab-content" id="tab-notes" style="display:none;">
+      <div class="card">
+        <div class="section-title" style="margin-bottom:14px;">Personal Notes</div>
+        <form hx-post="{% url 'application_update' app.pk %}"
+              hx-target="#app-detail-header"
+              hx-swap="innerHTML"
+              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+              hx-on::after-request="showToast('Notes saved','success')">
+          {% csrf_token %}
+          <textarea name="notes" class="form-textarea" style="min-height:200px;width:100%;" placeholder="Add notes about this application…">{{ app.notes }}</textarea>
+          <div style="margin-top:10px;text-align:right;">
+            <button type="submit" class="btn btn-primary btn-sm">Save Notes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Chat -->
+  <div style="display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;height:100%;">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+      <div style="width:28px;height:28px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 0 6h-1v1a4 4 0 0 1-8 0v-1H7a3 3 0 0 1 0-6h1V6a4 4 0 0 1 4-4z"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg>
+      </div>
+      <div>
+        <div style="font-size:13.5px;font-weight:700;">AI Assistant</div>
+        <div style="font-size:11.5px;color:var(--faint);">Contextual help for this application</div>
+      </div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg assistant">
+        <div class="msg-avatar">A</div>
+        <div class="msg-bubble">Hi! I'm your AI assistant for this application to <strong>{{ app.company }}</strong> as <strong>{{ app.role }}</strong>. I can help you with your CV, cover letter, interview prep, or any other questions. What would you like to work on?</div>
+      </div>
+      {% for msg in messages %}
+      <div class="msg {{ msg.role }}">
+        <div class="msg-avatar">{% if msg.role == 'assistant' %}A{% else %}{{ request.user.profile.get_initials|default:"U" }}{% endif %}</div>
+        <div class="msg-bubble">{{ msg.content }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="chat-input-area" id="chat-form-area">
+      <form hx-post="{% url 'chat_message' app.pk %}"
+            hx-target="#chat-messages"
+            hx-swap="beforeend"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+            hx-on::after-request="document.getElementById('chat-input').value='';document.getElementById('chat-input').style.height='42px'"
+            style="display:flex;gap:8px;align-items:flex-end;width:100%;">
+        {% csrf_token %}
+        <textarea id="chat-input" name="message" class="chat-input" placeholder="Ask anything about this application…" rows="1"></textarea>
+        <button type="submit" class="btn btn-primary btn-sm" style="flex:0 0 auto;height:42px;width:42px;padding:0;border-radius:10px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  document.getElementById('tab-' + tab).style.display = 'block';
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const chat = document.getElementById('chat-messages');
+  if (chat) chat.scrollTop = chat.scrollHeight;
+});
+</script>
+<style>
+.tab-btn {
+  padding: 7px 14px; border: none; background: transparent;
+  border-radius: 8px; font-family: inherit; font-size: 13px;
+  font-weight: 600; color: var(--muted); cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.tab-btn:hover { background: var(--elevated); color: var(--text); }
+.tab-btn.active { background: var(--elevated); color: var(--accent); }
+</style>
+{% endblock %}

@@ -1,0 +1,61 @@
+<div class="kanban-card"
+     id="card-{{ card.pk }}"
+     draggable="true"
+     ondragstart="cardDragStart(event, {{ card.pk }})"
+     ondragend="cardDragEnd(event)">
+  <div class="card-top">
+    <div class="card-logo" style="background:{{ card.color }};">{{ card.get_logo_initials }}</div>
+    <div class="card-company truncate">{{ card.company }}</div>
+    <div class="card-menu-wrap" style="position:relative;">
+      <button class="card-menu" onclick="toggleCardMenu(event, {{ card.pk }})" title="Options">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+        </svg>
+      </button>
+      <div class="card-dropdown" id="card-menu-{{ card.pk }}" style="display:none;position:absolute;right:0;top:28px;background:var(--elevated);border:1px solid var(--border);border-radius:10px;padding:6px;z-index:10;min-width:150px;box-shadow:0 8px 24px rgba(2,6,23,0.4);">
+        <a href="{% url 'application_detail' card.pk %}" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:var(--text);transition:background 0.1s;"
+           onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          View Details
+        </a>
+        <button hx-post="{% url 'application_delete' card.pk %}"
+                hx-confirm="Delete this application?"
+                hx-target="#card-{{ card.pk }}"
+                hx-swap="outerHTML"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;font-size:13px;font-weight:600;color:#EF4444;background:transparent;border:none;width:100%;cursor:pointer;transition:background 0.1s;"
+                onmouseover="this.style.background='rgba(239,68,68,0.08)'" onmouseout="this.style.background=''">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="card-role">{{ card.role }}</div>
+  <div class="card-footer">
+    <div class="card-meta">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg>
+      {{ card.location|default:"Remote" }}
+    </div>
+    <div class="card-tags">
+      {% if card.match_score %}
+      <span class="match-badge" style="color:var(--accent);background:var(--accent-soft);">{{ card.match_score }}%</span>
+      {% endif %}
+      {% if card.tag %}
+      <span class="tag-badge">{{ card.tag }}</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script>
+function toggleCardMenu(e, id) {
+  e.stopPropagation();
+  const menu = document.getElementById('card-menu-' + id);
+  const isOpen = menu.style.display !== 'none';
+  document.querySelectorAll('.card-dropdown').forEach(m => m.style.display = 'none');
+  menu.style.display = isOpen ? 'none' : 'block';
+}
+document.addEventListener('click', () => {
+  document.querySelectorAll('.card-dropdown').forEach(m => m.style.display = 'none');
+});
+</script>
