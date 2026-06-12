@@ -29,9 +29,18 @@ def dashboard(request):
     offers = apps.filter(status='offer').count()
     response_rate = round((interviews / total_applied * 100)) if total_applied else 0
 
+    col_meta = [
+        ('wishlist', 'Wishlist', '#94A3B8'),
+        ('applied', 'Applied', '#10B981'),
+        ('interview', 'Interview', '#F59E0B'),
+        ('offer', 'Offer', '#22C55E'),
+        ('rejected', 'Rejected', '#EF4444'),
+    ]
+
     return render(request, 'core/dashboard.html', {
         'profile': profile,
         'columns': columns,
+        'col_meta': col_meta,
         'total_applied': total_applied,
         'interviews': interviews,
         'offers': offers,
