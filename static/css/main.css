@@ -588,6 +588,39 @@ input, textarea, select { font-family: inherit; }
   max-height: 400px; overflow-y: auto;
 }
 
+/* ── Allauth form styling (as_p renders plain inputs without CSS classes) ── */
+.landing-card p { margin-bottom: 14px; }
+.landing-card p > label,
+.landing-card p > span > label {
+  display: block;
+  font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px;
+}
+.landing-card p > input[type="email"],
+.landing-card p > input[type="text"],
+.landing-card p > input[type="password"],
+.landing-card p > select {
+  display: block; width: 100%;
+  height: 42px; padding: 0 14px;
+  background: var(--elevated); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: 14px;
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.landing-card p > input:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.landing-card ul.errorlist {
+  list-style: none; margin-bottom: 10px;
+  color: #EF4444; font-size: 12.5px;
+  background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 8px; padding: 8px 12px;
+}
+.landing-card .helptext,
+.landing-card .helptext ul,
+.landing-card .helptext li {
+  font-size: 11.5px; color: var(--faint);
+  list-style: none; margin-top: 4px; line-height: 1.5;
+}
+
 /* ── Landing Page ── */
 .landing-page {
   min-height: 100vh; background: var(--bg);
