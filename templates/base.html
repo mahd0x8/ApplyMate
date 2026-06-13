@@ -46,7 +46,7 @@
             <rect x="16" y="4" width="5" height="13" rx="2" opacity="0.5"/>
           </svg>
         </span>
-        <span class="nav-label" style="display:flex;align-items:center;gap:8px;">
+        <span class="nav-label nav-label-apps">
           Applications
           <span class="app-badge">{{ total_apps|default:"0" }}</span>
         </span>
@@ -90,6 +90,13 @@
   <!-- Main -->
   <div class="main-area">
     <header class="topbar">
+      <button class="sidebar-menu-btn icon-btn" onclick="toggleSidebar()" title="Toggle sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
       <div>
         <div class="topbar-greeting">{% block page_title %}Good morning{% if request.user.profile.full_name %}, {{ request.user.profile.full_name|truncatewords:1 }}{% endif %}{% endblock %}</div>
         <div class="topbar-date mono">{% now "l · N j" %}</div>
