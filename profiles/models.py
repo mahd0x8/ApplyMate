@@ -128,3 +128,18 @@ class Certification(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class CustomEntry(models.Model):
+    profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='custom_entries')
+    heading = models.CharField(max_length=200)
+    title = models.CharField(max_length=200)
+    date = models.DateField(null=True, blank=True)
+    description = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['heading', 'order', '-date']
+
+    def __str__(self):
+        return f"{self.heading}: {self.title}"

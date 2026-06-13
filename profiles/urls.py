@@ -14,4 +14,6 @@ urlpatterns = [
     path('project/<int:pk>/delete/', views.delete_project, name='delete_project'),
     path('certification/add/', views.add_certification, name='add_certification'),
     path('certification/<int:pk>/delete/', views.delete_certification, name='delete_certification'),
+    path('custom/add/', views.add_custom_entry, name='add_custom_entry'),
+    path('custom/<int:pk>/delete/', views.delete_custom_entry, name='delete_custom_entry'),
 ]

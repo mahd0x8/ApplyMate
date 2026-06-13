@@ -2,13 +2,17 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST, require_http_methods
-from .models import UserProfile, WorkExperience, Education, Skill, Project, Certification
+from .models import UserProfile, WorkExperience, Education, Skill, Project, Certification, CustomEntry
+from collections import defaultdict
 
 
 @login_required
 def profile_view(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
-    return render(request, 'profiles/profile.html', {'profile': profile})
+    grouped = defaultdict(list)
+    for entry in profile.custom_entries.all():
+        grouped[entry.heading].append(entry)
+    return render(request, 'profiles/profile.html', {'profile': profile, 'custom_sections': dict(grouped)})
 
 
 @login_required
@@ -163,4 +167,35 @@ def delete_certification(request, pk):
     cert.delete()
     if request.headers.get('HX-Request'):
         return HttpResponse(status=200)
+    return redirect('profile')
+
+
+@login_required
+@require_POST
+def add_custom_entry(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    CustomEntry.objects.create(
+        profile=profile,
+        heading=request.POST.get('heading', '').strip(),
+        title=request.POST.get('title', '').strip(),
+        date=request.POST.get('date') or None,
+        description=request.POST.get('description', '').strip(),
+    )
+    if request.headers.get('HX-Request'):
+        from django.http import HttpResponse
+        response = HttpResponse(status=204)
+        response['HX-Refresh'] = 'true'
+        return response
+    return redirect('profile')
+
+
+@login_required
+@require_POST
+def delete_custom_entry(request, pk):
+    entry = get_object_or_404(CustomEntry, pk=pk, profile__user=request.user)
+    entry.delete()
+    if request.headers.get('HX-Request'):
+        response = HttpResponse(status=204)
+        response['HX-Refresh'] = 'true'
+        return response
     return redirect('profile')
